@@ -112,44 +112,14 @@ knitr::include_graphics("Figs/WM.png")
 ####Structure of [ESPNcricinfo](http://www.espncricinfo.com/) - One of the few Sophisticated takes on International Cricket Performance
 
 - _**StatsGuru**_ a database of historical matches and players from the 18th century to the present
----
 
-###ESPNcricinfo Tour
+```{r Espn_Cricinfo6,echo=FALSE,fig.cap="ESPNcricinfo Tour",fig.out="100%"}
 
-
-```{r Espn_Cricinfo1,echo=FALSE, fig.out="100%"}
-
-knitr::include_graphics('Figs/Step-1.png')
+knitr::include_graphics('Figs/espn.gif')
                         
 ```
----
-```{r Espn_Cricinfo2,echo=FALSE, fig.out="100%"}
 
-knitr::include_graphics('Figs/Step-2.png')
-                        
-```
----
 
-```{r Espn_Cricinfo3,echo=FALSE, fig.out="100%"}
-
-knitr::include_graphics('Figs/Step-3.png')
-                        
-```
----
-
-```{r Espn_Cricinfo4,echo=FALSE, fig.out="100%"}
-
-knitr::include_graphics('Figs/Step-4.png')
-
-                        
-```
----
-
-```{r Espn_Cricinfo5,echo=FALSE, fig.out="100%"}
-
-knitr::include_graphics('Figs/Step-5.png')
-                        
-```
 
 ---
 
@@ -304,3 +274,35 @@ A popular sport in the country between 1834 and 1914 and there were over 1000 cr
 ##How top players scores(Runs,X4s,X6s) compare to the average (Boxplot) 
 
 WIP
+---
+```{r, fetch_player,echo=FALSE}
+
+
+Player1=find_player_id("ST Jayasuriya")[1:2]
+Player2=find_player_id("AB de Villiers")[1:2]
+Player3=find_player_id("RT Ponting")[1:2]
+Player4=find_player_id("Sachin Tendulkar")[1:2]
+players_odi <- as_tibble(rbind(Player1,Player2,Player3,Player4))# Can put more players
+
+comb_players_odi=NULL
+players= players_odi$ID # put player's code
+format = "odi"  # choose format
+activity = "batting" # Choose activity
+for(i in 1:length(players))
+{
+  g1=fetch_player_data(players[i],format,activity)
+  g1=cbind("player_id"=players[i],g1)
+  comb_players_odi= rbind(comb_players_odi,g1)
+}
+
+
+as_tibble(comb_players_odi)%>%mutate(Runs=case_when(Runs<=50 ~ "Less than 50",
+                                                    Runs<=90 ~"Between 50 and 90",
+                                                    Runs<=100 ~"Between 90 and 100",
+                                                    Runs >100 ~"More than 100", TRUE ~ as.character(Runs)))%>% group_by(player_id,Runs, Dismissal)%>%tally()%>%filter(Dismissal!="NA")%>%left_join(players_odi,by=c("player_id"="ID"))%>%filter(Dismissal!="not out" & Dismissal!="retired notout")%>%mutate(Dismissal = case_when(Dismissal=="hit wicket" ~ "others",
+                             Dismissal=="stumped" ~ "others", TRUE~as.character(Dismissal)))-> Dist_dismissal
+
+Dist_dismissal$Runs<-factor(Dist_dismissal$Runs,c("Less than 50","Between 50 and 90","Between 90 and 100","More than 100"))
+
+Dist_dismissal %>% ggplot(aes(x=reorder(Dismissal,n),y=n,fill=Name))+geom_bar(stat = "identity")+ facet_grid(Runs~Name) + xlab("Dismissals") + ylab("Count") + ggtitle("Distribution of Dismissals :  ODI Players") + coord_flip()
+```
