@@ -102,16 +102,12 @@ class: left,middle
 
 ---
 
-#### Top Six Cricket Crazy Nations:
                   
-                  
-- INDIA, BANGLADESH, PAKISTAN, AUSTRALIA, ENGLAND, SRILANKA, NEW ZEALAND, SOUTH AFRICA
-
-
+```{r World_Map,echo=FALSE,fig.cap="Top Cricket Crazy Nations",fig.width=8,fig.height=3.5,dpi=300,out.width="1920px",out.height="600px"}
+knitr::include_graphics("Figs/WM.png")
+```
 ---
 
-
----
 
 ####Structure of [ESPNcricinfo](http://www.espncricinfo.com/) - One of the few Sophisticated takes on International Cricket Performance
 
@@ -164,6 +160,7 @@ Fielder = c("Number of Dismissals", "Number of Catches", "Number of Stumped", "N
 knitr::kable(cbind(Batsman,Bowler,Fielder),align = "c")%>%kable_styling(c("striped"), full_width = TRUE,font= 12 )
 ```
 
+####Change this slide
 ---
 
 class: center,middle
@@ -201,9 +198,24 @@ _**fetch_player**_ : Obtain the performance of a player in different formats lik
 ---
 class: center,middle
 
-## Question : Does batsmen with higher ducks have higher scores on an average?
+# Question: Which women players have scored consecutive centuries in ODI
 
-- Average score will be less if number of ducks are more! But we are talking about high scores
+```{r Conc100,echo=FALSE}
+#First fetch innings level information for your choice of sex, formats and activity
+odibat_F <- fetch_cricinfo("odi", "Women", "Batting",type="innings")
+
+Consecutive_Century_F <- odibat_F%>%arrange(Player, Date, Runs) %>%mutate(new_col=Runs >= 100) %>%group_by(Player,Country)%>%mutate(Run_length = rep(rle(new_col)$lengths,rle(new_col)$lengths), Runvar = rep(rle(new_col)$values,rle(new_col)$lengths))%>%filter(new_col==TRUE)%>%summarize(Con_cent=max(Run_length))%>%filter(Con_cent>=2)%>%select(Player,Country)%>%knitr::kable()
+
+Consecutive_Century_F
+```
+---
+# Question
+
+###How does Average score change with increasing Duck Rate amongst players with similar high scores?
+
+###How high score increases / decreases with increase in Duck Rate amonst players with similar average scores
+
+ - Can this plot be used to identify how players with similar average scores are different from each other in terms of consistent performance
 
 Ducks: Explain
 
@@ -219,7 +231,7 @@ odibat_M %>%mutate(Ducks_Rate=Ducks/Matches)%>%mutate(Matches=case_when(Matches<
                                      Matches >150 ~"More than 150", TRUE ~ as.character(Matches)))->odibat_M_1
 
 odibat_M_1 %>% filter(Matches=="Less than 50") %>% ggplot(aes(y = Average, x = Ducks_Rate,col=HighScore,Player=Player,Country=Country)) +
-  geom_point(alpha=0.3,col="blue") + 
+  geom_point(alpha=0.3,col="blue") + ggtitle("Batsmen playing less than matches") +
   ylab("Average Score") +xlab("Duck Rate")+theme(plot.title = element_text(family = "Trebuchet MS", color="#666666", face="bold", size=22, hjust=0)) +
   theme(axis.title = element_text(family = "Trebuchet MS", color="#666666", face="bold", size=14)) +
   theme(axis.text = element_text(family = "Trebuchet MS", color="#666666", face="bold", size=14))+ theme(legend.position = "bottom") -> p
@@ -231,7 +243,7 @@ ggplotly(p)
 ---
 ```{r, Between50and100,echo=FALSE,,out.width="100%",out.height="100%"}  
 odibat_M_1 %>% filter(Matches=="Between 50 and 100") %>% ggplot(aes(y = Average, x = Ducks_Rate,col=HighScore,Player=Player,Country=Country)) +
-  geom_point()+
+  geom_point()+ggtitle("Batsmen playing 50 - 100 matches")+
   ylab("Average Score") +xlab("Duck Rate")+theme(plot.title = element_text(family = "Trebuchet MS", color="#666666", face="bold", size=22, hjust=0)) +
   theme(axis.title = element_text(family = "Trebuchet MS", color="#666666", face="bold", size=14)) +
   theme(axis.text = element_text(family = "Trebuchet MS", color="#666666", face="bold", size=14))+ theme(legend.position = "bottom") ->p1
@@ -242,9 +254,9 @@ ggplotly(p1)
 ---
 ```{r, Between100and150,echo=FALSE,out.width="100%",out.height="100%"}  
 
-odibat_M_1 %>% filter(Matches=="Between 100 and 150") %>% ggplot(aes(y = Average, x = Ducks_Rate,col=HighScore,Player=Player,Country=Country)) +
-  geom_point()+ 
-  ylab("Average Score") +xlab("Duck Rate")+theme(plot.title = element_text(family = "Trebuchet MS", color="#666666", face="bold", size=22, hjust=0)) +
+odibat_M_1 %>% filter(Matches=="Between 100 and 150") %>% ggplot(aes(y = HighScore, x = Ducks_Rate,col=Average,Player=Player,Country=Country)) +
+  geom_point()+ ggtitle("Batsmen playing 100 - 150 matches")+
+  ylab("Highest Score") +xlab("Duck Rate")+theme(plot.title = element_text(family = "Trebuchet MS", color="#666666", face="bold", size=22, hjust=0)) +
   theme(axis.title = element_text(family = "Trebuchet MS", color="#666666", face="bold", size=14)) +
   theme(axis.text = element_text(family = "Trebuchet MS", color="#666666", face="bold", size=14))+ theme(legend.position = "bottom") ->p2
 
@@ -252,16 +264,41 @@ odibat_M_1 %>% filter(Matches=="Between 100 and 150") %>% ggplot(aes(y = Average
 ggplotly(p2)
 ```
 ---
-  
-```{r, Morethan150,echo=FALSE,out.width="100%",out.height="100%",}  
-odibat_M_1 %>% filter(Matches=="More than 150")%>%filter(Average>35) %>% ggplot(aes(y = HighScore, x = Ducks_Rate,col=Average,Player=Player,Country=Country)) +
-  geom_point()+
-  ylab("Average Score") +xlab("Duck Rate")+ theme(plot.title = element_text(family = "Trebuchet MS", color="#666666", face="bold", size=22, hjust=0)) +
+
+```{r, greater150,echo=FALSE,out.width="100%",out.height="100%"}  
+
+odibat_M_1 %>% filter(Matches=="More than 150") %>% ggplot(aes(y = HighScore, x = Ducks_Rate,col=Average,Player=Player,Country=Country)) +
+  geom_point()+ 
+  ylab("Highest Score") +xlab("Duck Rate")+  ggtitle("Batsmen playing more than 150 matches") + theme(plot.title = element_text(family = "Trebuchet MS", color="#666666", face="bold", size=22, hjust=0)) +
   theme(axis.title = element_text(family = "Trebuchet MS", color="#666666", face="bold", size=14)) +
-  theme(axis.text = element_text(family = "Trebuchet MS", color="#666666", face="bold", size=14))+ theme(legend.position = "bottom") -> p3
+  theme(axis.text = element_text(family = "Trebuchet MS", color="#666666", face="bold", size=14))+ theme(legend.text=element_text(family = "Trebuchet MS", color="#666666", face="bold", size=14)) -> p3
 
 
 ggplotly(p3)
-#htmltools::tagList(list(p, p1,p2,p3))
-
 ```
+---
+# Question : 
+
+##How top players get dismissed as they are close to a milestone - 
+
+###Vulnerability and Risk Preference
+
+---
+
+```{r Dist_Diss,echo=FALSE,fig.width = 7,out.width="100%"}
+knitr::include_graphics("Figs/Dist_Diss.png")
+```
+
+---
+
+#Fun Fact #2:
+
+Originally the first game ever to be played in the United States using a bat and ball was cricket
+
+A popular sport in the country between 1834 and 1914 and there were over 1000 cricket clubs across 46 states
+
+---
+
+# Question :
+
+##How top players scores(Runs,X4s,X6s) compare to the average (Boxplot) 
