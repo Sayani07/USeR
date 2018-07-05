@@ -12,7 +12,6 @@ output:
       countIncrementalSlides: false
 
 ---
-
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(
   message = FALSE,
@@ -38,11 +37,14 @@ library(bindrcpp)
 theme_set(theme_light(base_size = 23))
 ```
 
+
 ##Invented in England in the 13th century but gained popularity in 17th century
 
 
-```{r History-Cricket,echo=FALSE,fig.width = 7,fig.cap="A 1779 cricket match played by the Countess of Derby and other ladies"}
+```{r History-Cricket,echo=FALSE,fig.width = 7,out.width="100%",fig.cap="A 1779 cricket match played by the Countess of Derby and other ladies"}
+
 knitr::include_graphics("Figs/Women_Cricket.png")
+
 ```
 
 
@@ -101,10 +103,21 @@ class: left,middle
 - *T20* : 20 overs per side
 
 ---
+class: center,middle
 
+# Top Cricket Crazy Nations
                   
-```{r World_Map,echo=FALSE,fig.cap="Top Cricket Crazy Nations",fig.width=8,fig.height=3.5,dpi=300,out.width="1920px",out.height="600px"}
-knitr::include_graphics("Figs/WM.png")
+```{r World_Map,echo=FALSE,dpi=300,out.width="100%"}
+#knitr::include_graphics("Figs/WM.png")
+library(rworldmap)
+map.world <- map_data(map="world") %>% mutate(Cricket=region %in% c("Australia", "UK", "India", "Srilanka", "Pakistan", "Bangladesh", "New Zealand","South Africa","West Indies","Zimbabwe"))
+
+
+gg <- ggplot()
+gg <- gg + theme(legend.position="none")
+gg <- gg + geom_map(data=map.world, map=map.world, aes(map_id=region, x=long, y=lat, fill=Cricket))+ theme_void() + theme(legend.position = "bottom")+ coord_equal() 
+gg
+
 ```
 ---
 
@@ -168,13 +181,17 @@ _**fetch_player**_ : Obtain the performance of a player in different formats lik
 ---
 class: center,middle
 
-# Question: Which women players have scored consecutive centuries in ODI
+### Question: Which women players have scored consecutive centuries in ODI
 
-```{r Conc100,echo=FALSE}
-#First fetch innings level information for your choice of sex, formats and activity
+```{r Conc100,echo=TRUE}
+
 odibat_F <- fetch_cricinfo("odi", "Women", "Batting",type="innings")
 
-Consecutive_Century_F <- odibat_F%>%arrange(Player, Date, Runs) %>%mutate(new_col=Runs >= 100) %>%group_by(Player,Country)%>%mutate(Run_length = rep(rle(new_col)$lengths,rle(new_col)$lengths), Runvar = rep(rle(new_col)$values,rle(new_col)$lengths))%>%filter(new_col==TRUE)%>%summarize(Con_cent=max(Run_length))%>%filter(Con_cent>=2)%>%select(Player,Country)%>%knitr::kable()
+Consecutive_Century_F <- odibat_F%>%arrange(Player, Date, Runs) %>%
+mutate(new_col=Runs >= 100) %>%group_by(Player,Country)%>%
+mutate(Run_length = rep(rle(new_col)$lengths,rle(new_col)$lengths), Runvar = rep(rle(new_col)$values,rle(new_col)$lengths))%>%filter(new_col==TRUE)%>%
+summarize(Con_cent=max(Run_length))%>%filter(Con_cent>=2)%>%select(Player,Country)%>%
+knitr::kable()
 
 Consecutive_Century_F
 ```
@@ -237,11 +254,20 @@ ggplotly(p2)
 
 ```{r, greater150,echo=FALSE,out.width="100%",out.height="100%"}  
 
-odibat_M_1 %>% filter(Matches=="More than 150") %>% ggplot(aes(y = HighScore, x = Ducks_Rate,col=Average,Player=Player,Country=Country)) +
-  geom_point()+ 
-  ylab("Highest Score") +xlab("Duck Rate")+  ggtitle("Batsmen playing more than 150 matches") + theme(plot.title = element_text(family = "Trebuchet MS", color="#666666", face="bold", size=22, hjust=0)) +
-  theme(axis.title = element_text(family = "Trebuchet MS", color="#666666", face="bold", size=14)) +
-  theme(axis.text = element_text(family = "Trebuchet MS", color="#666666", face="bold", size=14))+ theme(legend.text=element_text(family = "Trebuchet MS", color="#666666", face="bold", size=14)) -> p3
+
+
+md<-mean(odibat_M_1$Ducks_Rate,na.rm=TRUE)
+mh<-mean(odibat_M_1$HighScore,na.rm=TRUE)
+odibat_M_1%>%filter(Matches=="More than 150")%>% mutate(mdu=ave(Ducks_Rate),mhu=ave(HighScore))->Average_M_1
+
+odibat_M_1 %>% filter(Matches=="More than 150")%>% ggplot(aes(y = HighScore, x = Ducks_Rate,col=Average,Player=Player,Country=Country)) + geom_hline(yintercept=Average_M_1$mhu)+geom_vline(xintercept=Average_M_1$mdu)+geom_point() + scale_color_distiller(palette="RdYlGn") + 
+  ylab("HighScore") +xlab("Duck Rate")+annotate("text",x=0.04,y=70,label="Low Risk-Low Reward",size=3.5)+
+annotate("text",x=0.1,y=70,label="High Risk-Low Reward",size=3.5) +
+annotate("text",x=0.1,y=200,label="High Risk-High Reward",size=3.5) + 
+annotate("text",x=0.04,y=200,label="Low Risk-High Reward",size=3.5)+
+ggtitle("Batsmen playing more than 150 matches") + theme(plot.title = element_text(family = "Trebuchet MS", color="#666666", face="bold", size=22, hjust=0)) +
+theme(axis.title = element_text(family = "Trebuchet MS", color="#666666", face="bold", size=14)) +
+theme(axis.text = element_text(family = "Trebuchet MS", color="#666666", face="bold", size=14))+ theme(legend.text=element_text(family = "Trebuchet MS", color="#666666", face="bold", size=14)) -> p3
 
 
 ggplotly(p3)
@@ -255,8 +281,40 @@ ggplotly(p3)
 
 ---
 
-```{r Dist_Diss,echo=FALSE,fig.width = 7,out.width="100%"}
-knitr::include_graphics("Figs/Dist_Diss.png")
+```{r Dist_Diss,echo=FALSE,out.width="100%",out.height="100%"}
+
+Player1=find_player_id("ST Jayasuriya")[1:2]
+Player2=find_player_id("AB de Villiers")[1:2]
+Player3=find_player_id("RT Ponting")[1:2]
+Player4=find_player_id("Sachin Tendulkar")[1:2]
+players_odi <- as_tibble(rbind(Player1,Player2,Player3,Player4))# Can put more players
+
+comb_players_odi=NULL
+players= players_odi$ID # put player's code
+format = "odi"  # choose format
+activity = "batting" # Choose activity
+
+
+for(i in 1:length(players))
+{
+  g1=fetch_player_data(players[i],format,activity)
+  g1=cbind("player_id"=players[i],g1)
+  comb_players_odi= rbind(comb_players_odi,g1)
+}
+```
+
+```{r Dist_Diss_plot,echo=FALSE,out.width="100%",out.height="100%",fig.width=14,fig.height=11}
+as_tibble(comb_players_odi)%>%mutate(Runs=case_when(Runs<=50 ~ "Less than 50",
+                                                    Runs<=90 ~"Between 50 and 90",
+                                                    Runs<=100 ~"Between 90 and 100",
+                                                    Runs >100 ~"More than 100", TRUE ~ as.character(Runs)))%>% group_by(player_id,Runs, Dismissal)%>%tally()%>%filter(Dismissal!="NA")%>%left_join(players_odi,by=c("player_id"="ID"))%>%filter(Dismissal!="not out" & Dismissal!="retired notout")%>%mutate(Dismissal = case_when(Dismissal=="hit wicket" ~ "others",
+                             Dismissal=="stumped" ~ "others", TRUE~as.character(Dismissal)))-> Dist_dismissal
+
+Dist_dismissal$Runs<-factor(Dist_dismissal$Runs,c("Less than 50","Between 50 and 90","Between 90 and 100","More than 100"))
+
+Dist_dismissal %>% ggplot(aes(x=reorder(Dismissal,n),y=n,fill=Name))+geom_bar(stat = "identity")+ facet_grid(Runs~Name) + xlab("Dismissals") + ylab("Count") + scale_color_brewer(palette = "Dark2")+ ggtitle("Distribution of Dismissals :  ODI Players") +theme(plot.title = element_text(family = "Trebuchet MS", color="#666666", face="bold", size=14, hjust=0)) +
+  theme(axis.title = element_text(family = "Trebuchet MS", color="#666666", face="bold", size=14))+
+  theme(axis.text = element_text(family = "Trebuchet MS", color="#666666", face="bold", size=14))+ theme(legend.text=element_text(family = "Trebuchet MS", color="#666666", face="bold", size=12),legend.position = "bottom")+ coord_flip()
 ```
 
 ---
@@ -273,36 +331,93 @@ A popular sport in the country between 1834 and 1914 and there were over 1000 cr
 
 ##How top players scores(Runs,X4s,X6s) compare to the average (Boxplot) 
 
-WIP
 ---
-```{r, fetch_player,echo=FALSE}
 
+```{r, Runs_Formats, echo=FALSE,fig.caption="Performance of Players across different game formats", out.width="100%",out.height="100%",fig.width=14,fig.height=11}
+Player1_cmp=find_player_id("David Warner")[1:2]                                  
+Player2_cmp=find_player_id("Virat Kohli")[1:2]
+Player3_cmp=find_player_id("Kane Williamson")[1:2]
+players_comp=as_tibble(rbind(Player1_cmp,Player2_cmp,Player3_cmp))
 
-Player1=find_player_id("ST Jayasuriya")[1:2]
-Player2=find_player_id("AB de Villiers")[1:2]
-Player3=find_player_id("RT Ponting")[1:2]
-Player4=find_player_id("Sachin Tendulkar")[1:2]
-players_odi <- as_tibble(rbind(Player1,Player2,Player3,Player4))# Can put more players
+Act_players_odi=NULL
+players= players_comp$ID
 
-comb_players_odi=NULL
-players= players_odi$ID # put player's code
-format = "odi"  # choose format
-activity = "batting" # Choose activity
 for(i in 1:length(players))
 {
-  g1=fetch_player_data(players[i],format,activity)
-  g1=cbind("player_id"=players[i],g1)
-  comb_players_odi= rbind(comb_players_odi,g1)
+  g1=fetch_player_data(players[i],"odi","batting")
+  g1=cbind("player_id"=players[i],g1, Format="ODI")
+  Act_players_odi= rbind(Act_players_odi,g1)
 }
 
 
-as_tibble(comb_players_odi)%>%mutate(Runs=case_when(Runs<=50 ~ "Less than 50",
-                                                    Runs<=90 ~"Between 50 and 90",
-                                                    Runs<=100 ~"Between 90 and 100",
-                                                    Runs >100 ~"More than 100", TRUE ~ as.character(Runs)))%>% group_by(player_id,Runs, Dismissal)%>%tally()%>%filter(Dismissal!="NA")%>%left_join(players_odi,by=c("player_id"="ID"))%>%filter(Dismissal!="not out" & Dismissal!="retired notout")%>%mutate(Dismissal = case_when(Dismissal=="hit wicket" ~ "others",
-                             Dismissal=="stumped" ~ "others", TRUE~as.character(Dismissal)))-> Dist_dismissal
 
-Dist_dismissal$Runs<-factor(Dist_dismissal$Runs,c("Less than 50","Between 50 and 90","Between 90 and 100","More than 100"))
+Act_players_test=NULL
 
-Dist_dismissal %>% ggplot(aes(x=reorder(Dismissal,n),y=n,fill=Name))+geom_bar(stat = "identity")+ facet_grid(Runs~Name) + xlab("Dismissals") + ylab("Count") + ggtitle("Distribution of Dismissals :  ODI Players") + coord_flip()
+for(i in 1:length(players))
+{
+  g1=fetch_player_data(players[i],"test","batting")
+  g1=cbind("player_id"=players[i],g1,Format="Test")
+  Act_players_test= rbind(Act_players_test,g1)
+}
+
+
+Act_players_t20=NULL
+
+for(i in 1:length(players))
+{
+  g1=fetch_player_data(players[i],"t20","batting")
+  g1=cbind("player_id"=players[i],g1,Format="T20")
+  Act_players_t20= rbind(Act_players_t20,g1)
+}
+
+
+Act_players <- rbind(Act_players_odi,Act_players_test,Act_players_t20)%>%left_join(players_comp,by=c("player_id"="ID"))%>%select(Name,Runs,X4s,X6s,SR,Format)
+
+
+g11<- Act_players%>%ggplot(aes(y = Runs, x = Name, col= Format)) +
+  geom_boxplot()  +  xlab("Players") + ylab("Distribution of Runs")+theme(plot.title = element_text(family = "Trebuchet MS", color="#666666", face="bold", size=14, hjust=0)) +
+  theme(axis.title = element_text(family = "Trebuchet MS", color="#666666", face="bold", size=14))+
+  theme(axis.text = element_text(family = "Trebuchet MS", color="#666666", face="bold", size=14))+ theme(legend.text=element_text(family = "Trebuchet MS", color="#666666", face="bold", size=12),legend.position = "bottom")
+
+g11
+```
+---
+  
+  
+
+
+
+```{r,SR_Formats,echo=FALSE,fig.caption="Strike Rate of Players across different game formats", out.width="100%",out.height="100%",fig.width=14,fig.height=11}
+g12<- Act_players%>%ggplot(aes(y = as.numeric(SR), x = Name, col= Format)) +
+  geom_boxplot() + xlab("Players") + ylab("Distribution of Strike Rate")+  xlab("Players") + ylab("Distribution of SR")+theme(plot.title = element_text(family = "Trebuchet MS", color="#666666", face="bold", size=14, hjust=0)) +
+  theme(axis.title = element_text(family = "Trebuchet MS", color="#666666", face="bold", size=14))+
+  theme(axis.text = element_text(family = "Trebuchet MS", color="#666666", face="bold", size=14))+ theme(legend.text=element_text(family = "Trebuchet MS", color="#666666", face="bold", size=12),legend.position = "bottom")
+  
+g12
+```
+---
+
+```{r,X6_Formats,echo=FALSE,fig.caption="Number of 6s across different game formats", out.width="100%",out.height="100%",fig.width=14,fig.height=11}
+
+
+
+g13<- Act_players%>%ggplot(aes(y = as.numeric(X6s), x = Name, col= Format)) +
+  geom_boxplot() + xlab("Players") + ylab("Distribution of X6s")+ xlab("Players") + ylab("Distribution of X6s")+theme(plot.title = element_text(family = "Trebuchet MS", color="#666666", face="bold", size=14, hjust=0)) +
+  theme(axis.title = element_text(family = "Trebuchet MS", color="#666666", face="bold", size=14))+
+  theme(axis.text = element_text(family = "Trebuchet MS", color="#666666", face="bold", size=14))+ theme(legend.text=element_text(family = "Trebuchet MS", color="#666666", face="bold", size=12),legend.position = "bottom")
+
+
+g13
+```
+---
+
+```{r,X4_Formats,echo=FALSE,fig.caption="Number of 4s of Players across different game formats", out.width="100%",out.height="100%",fig.width=14,fig.height=11}
+
+
+g14<- Act_players%>%ggplot(aes(y = as.numeric(X4s), x = Name, col= Format)) +
+  geom_boxplot() + xlab("Players") + ylab("Distribution of X4s")+  xlab("Players") + ylab("Distribution of X4s")+theme(plot.title = element_text(family = "Trebuchet MS", color="#666666", face="bold", size=14, hjust=0)) +
+  theme(axis.title = element_text(family = "Trebuchet MS", color="#666666", face="bold", size=14))+
+  theme(axis.text = element_text(family = "Trebuchet MS", color="#666666", face="bold", size=14))+ theme(legend.text=element_text(family = "Trebuchet MS", color="#666666", face="bold", size=12),legend.position = "bottom")
+
+g14
 ```
