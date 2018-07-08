@@ -1,5 +1,5 @@
 ---
-title: "An R package for international cricket data"
+title: "CricketData : An R package for international cricket data"
 author: Sayani Gupta
 date: "July 2018"
 output:
@@ -37,6 +37,25 @@ library(bindrcpp)
 theme_set(theme_light(base_size = 23))
 ```
 
+class: center,middle
+
+# Top Cricket Crazy Nations
+                  
+```{r World_Map,echo=FALSE,dpi=300,out.width="100%"}
+#knitr::include_graphics("Figs/WM.png")
+library(rworldmap)
+map.world <- map_data(map="world") %>% mutate(Cricket=region %in% c("Australia", "UK", "India", "Pakistan", "Bangladesh", "New Zealand","South Africa","West Indies","Zimbabwe","Sri Lanka"))
+
+
+
+gg <- ggplot()
+gg <- gg + theme(legend.position="none")
+gg <- gg + geom_map(data=map.world, map=map.world, aes(map_id=region, x=long, y=lat, fill=Cricket))+ theme_void() + scale_color_brewer(palette = "Dark2")+ theme(legend.position = "bottom")+ coord_equal() + scale_fill_brewer(palette = "Dark2")
+gg
+
+```
+---
+
 
 ##Invented in England in the 13th century but gained popularity in 17th century
 
@@ -72,13 +91,28 @@ class: left,middle
 # Quick Facts
 
 
-- Involves two teams with 11 players on each side
+- Involves two teams with 11 player's on each side
 
 
-- The objective is to score the more runs than the opponent
+- The objective is to score more runs than the opponent
 
 
-- Key Players are *Batsman*, *Bowler* and *Fielder*
+### Key Players
+
+- Batsman
+- Bowler
+- Fielder
+
+
+
+###Played in many formats
+
+- *TEST (1871)* : played over 5 days     
+
+- *One Day Internationals - ODI (1971) * :  50 overs per side   
+
+- *Twenty20 - T20 (2005)* : 20 overs per side                    
+
 
 ---
 
@@ -89,44 +123,12 @@ knitr::include_graphics("Figs/Cricket.png")
 ```
 ---
 
-class: left,middle
-
-
-# Quick Facts
-
-###Played in many formats
-
-- *TEST* : played over 5 days 
-
-- *ODI* :  50 overs per side
-
-- *T20* : 20 overs per side
-
----
-class: center,middle
-
-# Top Cricket Crazy Nations
-                  
-```{r World_Map,echo=FALSE,dpi=300,out.width="100%"}
-#knitr::include_graphics("Figs/WM.png")
-library(rworldmap)
-map.world <- map_data(map="world") %>% mutate(Cricket=region %in% c("Australia", "UK", "India", "Srilanka", "Pakistan", "Bangladesh", "New Zealand","South Africa","West Indies","Zimbabwe"))
-
-
-gg <- ggplot()
-gg <- gg + theme(legend.position="none")
-gg <- gg + geom_map(data=map.world, map=map.world, aes(map_id=region, x=long, y=lat, fill=Cricket))+ theme_void() + theme(legend.position = "bottom")+ coord_equal() 
-gg
-
-```
----
-
 
 ####Structure of [ESPNcricinfo](http://www.espncricinfo.com/) - One of the few Sophisticated takes on International Cricket Performance
 
 - _**StatsGuru**_ a database of historical matches and players from the 18th century to the present
 
-```{r Espn_Cricinfo6,echo=FALSE,fig.cap="ESPNcricinfo Tour",fig.out="100%"}
+```{r Espn_Cricinfo6,echo=FALSE,fig.cap="ESPNcricinfo Tour",fig.out="100%",interval=1.5}
 
 knitr::include_graphics('Figs/espn.gif')
                         
@@ -135,15 +137,10 @@ knitr::include_graphics('Figs/espn.gif')
 
 
 ---
-
-```{r Structure_ESPN,echo=FALSE}
-Batsman=c("Total Runs Scored", "Number of Balls Faced","Number of Fours and Sixes", "Strike Rate, Opposition", "Position", "Dismissal", "Innings", "Ground", "Date of the Match")
-Bowler = c("Number of Overs Bowled", "Number of Maiden Overs", "Number of Runs given", "Number of Wickets", "Position", "Innings", "Oppsition", "Ground","Date of the Match")
-Fielder = c("Number of Dismissals", "Number of Catches", "Number of Stumped", "Number of Wicket Keeper Catches","Innings", "Oppsition", "Ground", "Date of the Match", "")
-knitr::kable(cbind(Batsman,Bowler,Fielder),align = "c")%>%kable_styling(c("striped"), full_width = TRUE,font= 12 )
+```{r Structure_ESPN,echo=FALSE,out.width="100%"}
+knitr::include_graphics('Figs/Stats2.png')
 ```
 
-####Change this slide
 ---
 
 class: center,middle
@@ -151,18 +148,19 @@ class: center,middle
 #Challenges??
 
 --
+class: left,left
 
-_**Collectively, all this data has the potential to create vast opportunities to analyze and make meaningful insights**_
+###Collectively, all this data has the potential to create vast opportunities in statistical thinking in cricket
 
 
-- User needs to insert a query in the website every time to obtain information about performance of a player
+<span style="color:green"> User needs to insert **FIVE** (approx) queries on the website to obtain information about performance of **ONE** player  </span>
 
-- Limited ways to save those tables efficiently for comprehensive comparison of two or more players and facilitate statistical thinking in cricket
+<span style="color:brown">Limited ways to save those tables efficiently for **comprehensive comparison** of two or more players </span>
 
 ---
 class: center,middle
 
-#Package Cricketdata 
+# <span style="color:MediumVioletRed"> Package CricketData </span>
 
 ##Opening door to more data driven stories for men's and women's cricket
 
@@ -172,100 +170,56 @@ class: center,middle
 Contains scraper functions for downloading data from ESPNCricinfo into tibbles which can be readily used to analyse the performance of players across different game formats and activities
 
 
-_**fetch_cricinfo**_ : Innings/Career wise summary of the players for all countries (*Existed Before*)
+<span style="color:MediumVioletRed">**fetch_cricinfo** </span> 
+To fetch Innings/Career wise summary of the players for all countries (*Existed Before*)
 
-_**find_player_id**_ : Obtain the player id when the user types the name (may be partial) of the player
+<span style="color:MediumVioletRed">**find_player_id**</span>
+To fetch player id when the user types the name (may be partial) of the player
 
-_**fetch_player**_ : Obtain the performance of a player in different formats like TESTS, ODI or T20 and different activities like batting, fielding and bowling using the player id obtained from *find_player_id*
+<span style="color:MediumVioletRed">**fetch_player_data**</span> 
+To obtain the performance of a player in different formats like TESTS, ODI or T20 and different activities like batting, fielding and bowling using the player id obtained from *find_player_id*
 
 ---
-class: center,middle
+class: left,left
 
-### Question: Which women players have scored consecutive centuries in ODI
+### Which women players have scored consecutive centuries in ODI ?
 
-```{r Conc100,echo=TRUE}
+```{r Conc100,echo=TRUE,size="small"}
+library(cricketdata)
+WBI <- fetch_cricinfo("odi", "Women", "Batting",type="innings")
 
-odibat_F <- fetch_cricinfo("odi", "Women", "Batting",type="innings")
+S1 <- WBI%>%arrange(Player, Date, Runs)
+S2 <- S1 %>%mutate(NC=Runs >= 100) %>%group_by(Player,Country)
+S3 <- S2 %>% mutate(RL = rep(rle(NC)$lengths,rle(NC)$lengths), RV = rep(rle(NC)$values,rle(NC)$lengths))%>%filter(NC==TRUE)
+S4 <- S3 %>% summarize(Con_cent=max(RL))%>%filter(Con_cent>=2)%>%select(Player,Country)
+S4%>% knitr::kable() %>% kable_styling(font_size = 10)
 
-Consecutive_Century_F <- odibat_F%>%arrange(Player, Date, Runs) %>%
-mutate(new_col=Runs >= 100) %>%group_by(Player,Country)%>%
-mutate(Run_length = rep(rle(new_col)$lengths,rle(new_col)$lengths), Runvar = rep(rle(new_col)$values,rle(new_col)$lengths))%>%filter(new_col==TRUE)%>%
-summarize(Con_cent=max(Run_length))%>%filter(Con_cent>=2)%>%select(Player,Country)%>%
-knitr::kable()
-
-Consecutive_Century_F
 ```
 ---
-# Question
 
-###How does Average score change with increasing Duck Rate amongst players with similar high scores?
+#How high score increases / decreases with increase in Duck Rate amonst players with similar average scores?
 
-###How high score increases / decreases with increase in Duck Rate amonst players with similar average scores
-
- - Can this plot be used to identify how players with similar average scores are different from each other in terms of consistent performance
-
-Ducks: Explain
-
+## Identifying <span style="color:MediumVioletRed">Low Risk - High Reward Batsman</span>
 
 ---
 ```{r Plots,echo=FALSE,,out.width="100%",out.height="100%"}
 odibat_M <- fetch_cricinfo("odi", "Men", "Batting")
 
- par(mfrow=c(2,2))
 odibat_M %>%mutate(Ducks_Rate=Ducks/Matches)%>%mutate(Matches=case_when(Matches<=50 ~ "Less than 50",
                                      Matches<=100 ~"Between 50 and 100",
                                      Matches<=150 ~"Between 100 and 150",
                                      Matches >150 ~"More than 150", TRUE ~ as.character(Matches)))->odibat_M_1
 
-odibat_M_1 %>% filter(Matches=="Less than 50") %>% ggplot(aes(y = Average, x = Ducks_Rate,col=HighScore,Player=Player,Country=Country)) +
-  geom_point(alpha=0.3,col="blue") + ggtitle("Batsmen playing less than matches") +
-  ylab("Average Score") +xlab("Duck Rate")+theme(plot.title = element_text(family = "Trebuchet MS", color="#666666", face="bold", size=22, hjust=0)) +
-  theme(axis.title = element_text(family = "Trebuchet MS", color="#666666", face="bold", size=14)) +
-  theme(axis.text = element_text(family = "Trebuchet MS", color="#666666", face="bold", size=14))+ theme(legend.position = "bottom") -> p
- 
-
-
-ggplotly(p)
-```
----
-```{r, Between50and100,echo=FALSE,,out.width="100%",out.height="100%"}  
-odibat_M_1 %>% filter(Matches=="Between 50 and 100") %>% ggplot(aes(y = Average, x = Ducks_Rate,col=HighScore,Player=Player,Country=Country)) +
-  geom_point()+ggtitle("Batsmen playing 50 - 100 matches")+
-  ylab("Average Score") +xlab("Duck Rate")+theme(plot.title = element_text(family = "Trebuchet MS", color="#666666", face="bold", size=22, hjust=0)) +
-  theme(axis.title = element_text(family = "Trebuchet MS", color="#666666", face="bold", size=14)) +
-  theme(axis.text = element_text(family = "Trebuchet MS", color="#666666", face="bold", size=14))+ theme(legend.position = "bottom") ->p1
-
-
-ggplotly(p1)
-```
----
-```{r, Between100and150,echo=FALSE,out.width="100%",out.height="100%"}  
-
-odibat_M_1 %>% filter(Matches=="Between 100 and 150") %>% ggplot(aes(y = HighScore, x = Ducks_Rate,col=Average,Player=Player,Country=Country)) +
-  geom_point()+ ggtitle("Batsmen playing 100 - 150 matches")+
-  ylab("Highest Score") +xlab("Duck Rate")+theme(plot.title = element_text(family = "Trebuchet MS", color="#666666", face="bold", size=22, hjust=0)) +
-  theme(axis.title = element_text(family = "Trebuchet MS", color="#666666", face="bold", size=14)) +
-  theme(axis.text = element_text(family = "Trebuchet MS", color="#666666", face="bold", size=14))+ theme(legend.position = "bottom") ->p2
-
-
-ggplotly(p2)
-```
----
-
-```{r, greater150,echo=FALSE,out.width="100%",out.height="100%"}  
-
-
-
 md<-mean(odibat_M_1$Ducks_Rate,na.rm=TRUE)
 mh<-mean(odibat_M_1$HighScore,na.rm=TRUE)
-odibat_M_1%>%filter(Matches=="More than 150")%>% mutate(mdu=ave(Ducks_Rate),mhu=ave(HighScore))->Average_M_1
+odibat_M_1%>%filter(Matches=="Between 100 and 150"|Matches=="More than 150")%>% mutate(mdu=ave(Ducks_Rate),mhu=ave(HighScore))->Average_M_1
 
-odibat_M_1 %>% filter(Matches=="More than 150")%>% ggplot(aes(y = HighScore, x = Ducks_Rate,col=Average,Player=Player,Country=Country)) + geom_hline(yintercept=Average_M_1$mhu)+geom_vline(xintercept=Average_M_1$mdu)+geom_point() + scale_color_distiller(palette="RdYlGn") + 
+odibat_M_1 %>% filter(Matches=="Between 100 and 150"|Matches=="More than 150")%>% ggplot(aes(y = HighScore, x = Ducks_Rate,col=Average,Player=Player,Country=Country)) + geom_hline(yintercept=Average_M_1$mhu)+geom_vline(xintercept=Average_M_1$mdu)+geom_point() + scale_color_distiller(palette="RdYlBu") + 
   ylab("HighScore") +xlab("Duck Rate")+annotate("text",x=0.04,y=70,label="Low Risk-Low Reward",size=3.5)+
 annotate("text",x=0.1,y=70,label="High Risk-Low Reward",size=3.5) +
 annotate("text",x=0.1,y=200,label="High Risk-High Reward",size=3.5) + 
 annotate("text",x=0.04,y=200,label="Low Risk-High Reward",size=3.5)+
-ggtitle("Batsmen playing more than 150 matches") + theme(plot.title = element_text(family = "Trebuchet MS", color="#666666", face="bold", size=22, hjust=0)) +
+ggtitle("Batsmen playing more than 100 matches") + theme(plot.title = element_text(family = "Trebuchet MS", color="#666666", face="bold", size=22, hjust=0)) +
 theme(axis.title = element_text(family = "Trebuchet MS", color="#666666", face="bold", size=14)) +
 theme(axis.text = element_text(family = "Trebuchet MS", color="#666666", face="bold", size=14))+ theme(legend.text=element_text(family = "Trebuchet MS", color="#666666", face="bold", size=14)) -> p3
 
@@ -273,9 +227,8 @@ theme(axis.text = element_text(family = "Trebuchet MS", color="#666666", face="b
 ggplotly(p3)
 ```
 ---
-# Question : 
 
-##How top players get dismissed as they are close to a milestone - 
+# How top players get dismissed as they are close to a milestone?
 
 ###Vulnerability and Risk Preference
 
@@ -308,28 +261,20 @@ as_tibble(comb_players_odi)%>%mutate(Runs=case_when(Runs<=50 ~ "Less than 50",
                                                     Runs<=90 ~"Between 50 and 90",
                                                     Runs<=100 ~"Between 90 and 100",
                                                     Runs >100 ~"More than 100", TRUE ~ as.character(Runs)))%>% group_by(player_id,Runs, Dismissal)%>%tally()%>%filter(Dismissal!="NA")%>%left_join(players_odi,by=c("player_id"="ID"))%>%filter(Dismissal!="not out" & Dismissal!="retired notout")%>%mutate(Dismissal = case_when(Dismissal=="hit wicket" ~ "others",
-                             Dismissal=="stumped" ~ "others", TRUE~as.character(Dismissal)))-> Dist_dismissal
+                             Dismissal=="stumped" ~ "others", TRUE~as.character(Dismissal)))%>%mutate(Percent_Dismissal=n*100/sum(n))-> Dist_dismissal
 
 Dist_dismissal$Runs<-factor(Dist_dismissal$Runs,c("Less than 50","Between 50 and 90","Between 90 and 100","More than 100"))
 
-Dist_dismissal %>% ggplot(aes(x=reorder(Dismissal,n),y=n,fill=Name))+geom_bar(stat = "identity")+ facet_grid(Runs~Name) + xlab("Dismissals") + ylab("Count") + scale_color_brewer(palette = "Dark2")+ ggtitle("Distribution of Dismissals :  ODI Players") +theme(plot.title = element_text(family = "Trebuchet MS", color="#666666", face="bold", size=14, hjust=0)) +
+Dist_dismissal %>% ggplot(aes(x=reorder(Dismissal,n),y=Percent_Dismissal,fill=Dismissal))+geom_bar(stat = "identity")+ facet_grid(Runs~Name) + theme(strip.text.x = element_text(size = 14,colour="black"),strip.text.y= element_text(size = 14,colour="black")) + xlab("Dismissals") + ylab("Count") + scale_color_brewer(palette = "Dark2")+ ggtitle("Distribution of Dismissals :  ODI Players") +theme(plot.title = element_text(family = "Trebuchet MS", color="#666666", face="bold", size=14, hjust=0)) +
   theme(axis.title = element_text(family = "Trebuchet MS", color="#666666", face="bold", size=14))+
   theme(axis.text = element_text(family = "Trebuchet MS", color="#666666", face="bold", size=14))+ theme(legend.text=element_text(family = "Trebuchet MS", color="#666666", face="bold", size=12),legend.position = "bottom")+ coord_flip()
 ```
 
 ---
 
-#Fun Fact #2:
+class: center,middle
 
-Originally the first game ever to be played in the United States using a bat and ball was cricket
-
-A popular sport in the country between 1834 and 1914 and there were over 1000 cricket clubs across 46 states
-
----
-
-# Question :
-
-##How top players scores(Runs,X4s,X6s) compare to the average (Boxplot) 
+#How top players Strike Rate and Runs contrast?
 
 ---
 
@@ -371,53 +316,54 @@ for(i in 1:length(players))
 }
 
 
-Act_players <- rbind(Act_players_odi,Act_players_test,Act_players_t20)%>%left_join(players_comp,by=c("player_id"="ID"))%>%select(Name,Runs,X4s,X6s,SR,Format)
+
+Act_players <- rbind(Act_players_test,Act_players_odi,Act_players_t20)%>%left_join(players_comp,by=c("player_id"="ID"))%>%select(Name,Runs,X4s,X6s,SR,Format)
 
 
-g11<- Act_players%>%ggplot(aes(y = Runs, x = Name, col= Format)) +
-  geom_boxplot()  +  xlab("Players") + ylab("Distribution of Runs")+theme(plot.title = element_text(family = "Trebuchet MS", color="#666666", face="bold", size=14, hjust=0)) +
+Act_players$Format<-factor(Act_players$Format,c("Test","ODI","T20"))
+
+
+g12<- Act_players%>%ggplot(aes(y = as.numeric(SR), x = Name, fill=Format)) + geom_boxplot() + xlab("Players") + ylab("Distribution of Strike Rate")+  xlab("Players") + ylab("Distribution of SR")+ scale_fill_brewer(palette="Dark2")+
+  theme(plot.title = element_text(family = "Trebuchet MS", color="#666666", face="bold", size=14, hjust=0)) +
+  theme(axis.title = element_text(family = "Trebuchet MS", color="#666666", face="bold", size=14))+
+  theme(axis.text = element_text(family = "Trebuchet MS", color="#666666", face="bold", size=14))+ theme(legend.text=element_text(family = "Trebuchet MS", color="#666666", face="bold", size=12),legend.position = "bottom")
+  
+g12
+
+
+```
+---
+  
+  
+
+```{r,SR_Formats,echo=FALSE,fig.caption="Strike Rate of Players across different game formats", out.width="100%",out.height="100%",fig.width=14,fig.height=11}
+
+
+g11<- Act_players%>%ggplot(aes(y = Runs, x = Name, fill=Format)) +
+  geom_boxplot()  +  xlab("Players") + ylab("Distribution of Runs")+theme(plot.title = element_text(family = "Trebuchet MS", color="#666666", face="bold", size=14, hjust=0)) +scale_fill_brewer(palette="Dark2")+
   theme(axis.title = element_text(family = "Trebuchet MS", color="#666666", face="bold", size=14))+
   theme(axis.text = element_text(family = "Trebuchet MS", color="#666666", face="bold", size=14))+ theme(legend.text=element_text(family = "Trebuchet MS", color="#666666", face="bold", size=12),legend.position = "bottom")
 
 g11
 ```
 ---
-  
-  
 
+# More Information
 
+Package Cricketdata: https://github.com/ropenscilabs/cricketdata
+Slides: https://sayani.netlify.com/slides/user1#1
 
-```{r,SR_Formats,echo=FALSE,fig.caption="Strike Rate of Players across different game formats", out.width="100%",out.height="100%",fig.width=14,fig.height=11}
-g12<- Act_players%>%ggplot(aes(y = as.numeric(SR), x = Name, col= Format)) +
-  geom_boxplot() + xlab("Players") + ylab("Distribution of Strike Rate")+  xlab("Players") + ylab("Distribution of SR")+theme(plot.title = element_text(family = "Trebuchet MS", color="#666666", face="bold", size=14, hjust=0)) +
-  theme(axis.title = element_text(family = "Trebuchet MS", color="#666666", face="bold", size=14))+
-  theme(axis.text = element_text(family = "Trebuchet MS", color="#666666", face="bold", size=14))+ theme(legend.text=element_text(family = "Trebuchet MS", color="#666666", face="bold", size=12),legend.position = "bottom")
-  
-g12
-```
+# My Contact Details
+
+- Sayani.Gupta@monash.edu
+- https://github.com/Sayani07
+- https://sayani.netlify.com/
+
+# Other Authors of the Package  
+
+- Rob J Hyndman
+- Timothy Hyndman
+- Charles Gray 
+- Puwasala Gamakumara
+
 ---
-
-```{r,X6_Formats,echo=FALSE,fig.caption="Number of 6s across different game formats", out.width="100%",out.height="100%",fig.width=14,fig.height=11}
-
-
-
-g13<- Act_players%>%ggplot(aes(y = as.numeric(X6s), x = Name, col= Format)) +
-  geom_boxplot() + xlab("Players") + ylab("Distribution of X6s")+ xlab("Players") + ylab("Distribution of X6s")+theme(plot.title = element_text(family = "Trebuchet MS", color="#666666", face="bold", size=14, hjust=0)) +
-  theme(axis.title = element_text(family = "Trebuchet MS", color="#666666", face="bold", size=14))+
-  theme(axis.text = element_text(family = "Trebuchet MS", color="#666666", face="bold", size=14))+ theme(legend.text=element_text(family = "Trebuchet MS", color="#666666", face="bold", size=12),legend.position = "bottom")
-
-
-g13
-```
----
-
-```{r,X4_Formats,echo=FALSE,fig.caption="Number of 4s of Players across different game formats", out.width="100%",out.height="100%",fig.width=14,fig.height=11}
-
-
-g14<- Act_players%>%ggplot(aes(y = as.numeric(X4s), x = Name, col= Format)) +
-  geom_boxplot() + xlab("Players") + ylab("Distribution of X4s")+  xlab("Players") + ylab("Distribution of X4s")+theme(plot.title = element_text(family = "Trebuchet MS", color="#666666", face="bold", size=14, hjust=0)) +
-  theme(axis.title = element_text(family = "Trebuchet MS", color="#666666", face="bold", size=14))+
-  theme(axis.text = element_text(family = "Trebuchet MS", color="#666666", face="bold", size=14))+ theme(legend.text=element_text(family = "Trebuchet MS", color="#666666", face="bold", size=12),legend.position = "bottom")
-
-g14
-```
